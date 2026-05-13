@@ -6,6 +6,7 @@ DEFAULT_REPO_URL="https://github.com/ishipu/agent-handoff.git"
 REPO_URL="${AGENT_HANDOFF_REPO_URL:-$DEFAULT_REPO_URL}"
 SOURCE_DIR="${AGENT_HANDOFF_SOURCE:-}"
 TMP_DIR=""
+PACK_DIR=""
 
 info() {
   printf '%s\n' "==> $*"
@@ -23,6 +24,9 @@ need_cmd() {
 cleanup() {
   if [ -n "$TMP_DIR" ] && [ -d "$TMP_DIR" ]; then
     rm -rf "$TMP_DIR"
+  fi
+  if [ -n "$PACK_DIR" ] && [ -d "$PACK_DIR" ]; then
+    rm -rf "$PACK_DIR"
   fi
 }
 
@@ -75,10 +79,21 @@ info "Preparing package from $SOURCE_DIR"
     npm install
   fi
   npm run build
+  chmod +x dist/src/cli.js
 )
 
+TMP_PARENT="${TMPDIR:-/tmp}"
+PACK_DIR="$(mktemp -d "$TMP_PARENT/agent-handoff-pack.XXXXXX")"
+info "Packing $PACKAGE_NAME"
+PACK_OUTPUT="$(
+  cd "$SOURCE_DIR"
+  npm pack --silent --pack-destination "$PACK_DIR"
+)"
+TARBALL="$PACK_DIR/$PACK_OUTPUT"
+[ -f "$TARBALL" ] || die "npm pack did not create expected tarball: $TARBALL"
+
 info "Installing $PACKAGE_NAME globally"
-if ! npm install -g --ignore-scripts "$SOURCE_DIR"; then
+if ! npm install -g "$TARBALL"; then
   die "npm global install failed. If this is a permissions issue, retry with: npm_config_prefix=\"$HOME/.npm-global\" sh install.sh"
 fi
 
