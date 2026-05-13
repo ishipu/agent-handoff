@@ -52,12 +52,18 @@ Usage:
   agent-handoff init [projectPath] [--force]
   agent-handoff status [projectPath]
   agent-handoff pickup [projectPath]
-  agent-handoff close-session [projectPath] --agent claude|codex --summary "What changed"
+  agent-handoff files [projectPath]
+  agent-handoff close-session [projectPath] --agent <claude or codex> --summary "What changed"
+
+Examples:
+  agent-handoff close-session --agent claude --summary "Finished the auth refactor"
+  agent-handoff close-session --agent codex --summary "Added tests and left one blocker"
 
 Commands:
   init           Create project-local handoff files and Claude/Codex Skills.
   status         Show handoff setup, git status, and the latest session note.
   pickup         Print a ready-to-paste continuation prompt.
+  files          List scaffolded handoff files and session notes.
   close-session  Record a session note and refresh .agent/HANDOFF.md.
 `;
 }

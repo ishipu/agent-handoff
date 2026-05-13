@@ -1,7 +1,7 @@
 import path from "node:path";
 import { ensureDir, exists, latestMarkdownFile, listMarkdownFiles, readTextIfExists, writeTextFile } from "./fileOps.js";
 import { getGitSnapshot } from "./git.js";
-import { expectedProjectFiles, relativeDisplay, resolveProjectPath } from "./paths.js";
+import { expectedProjectEntries, expectedProjectFiles, relativeDisplay, resolveProjectPath } from "./paths.js";
 import {
   agentsTemplate,
   claudeTemplate,
@@ -10,7 +10,7 @@ import {
   skillTemplate,
   updatedHandoffTemplate
 } from "./templates/index.js";
-import type { CloseSessionOptions, CloseSessionResult, InitOptions, InitResult, ProjectPathOptions, StatusReport, WriteResult } from "./types.js";
+import type { CloseSessionOptions, CloseSessionResult, CreatedFileEntry, CreatedFilesReport, InitOptions, InitResult, ProjectPathOptions, StatusReport, WriteResult } from "./types.js";
 
 const SESSION_DIR = ".agent/sessions";
 const HANDOFF_PATH = ".agent/HANDOFF.md";
@@ -105,6 +105,39 @@ export async function pickupPrompt(options: ProjectPathOptions = {}): Promise<st
     "",
     "Continue from the next concrete step. If the handoff is unclear, ask the user before changing files."
   ].join("\n");
+}
+
+export async function createdFiles(options: ProjectPathOptions = {}): Promise<CreatedFilesReport> {
+  const projectPath = resolveProjectPath(options.projectPath);
+  const entries: CreatedFileEntry[] = [];
+
+  for (const entry of expectedProjectEntries) {
+    entries.push({
+      path: entry.path,
+      type: entry.type,
+      exists: await exists(path.join(projectPath, entry.path))
+    });
+  }
+
+  for (const sessionPath of await listMarkdownFiles(path.join(projectPath, SESSION_DIR))) {
+    entries.push({
+      path: relativeDisplay(projectPath, sessionPath),
+      type: "session",
+      exists: true
+    });
+  }
+
+  const text = [
+    "Agent Handoff Files",
+    `Project: ${projectPath}`,
+    "",
+    ...entries.map((entry) => {
+      const marker = entry.exists ? "present" : "missing";
+      return `${marker.padEnd(7)} ${entry.type.padEnd(9)} ${entry.path}`;
+    })
+  ].join("\n");
+
+  return { projectPath, entries, text };
 }
 
 export async function closeSession(options: CloseSessionOptions): Promise<CloseSessionResult> {

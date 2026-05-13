@@ -10,6 +10,7 @@
   "files": [
     "dist/src",
     "install.sh",
+    "uninstall.sh",
     "README.md",
     "LICENSE"
   ],
@@ -17,6 +18,7 @@
     "build": "tsc -p tsconfig.json",
     "test": "npm run build && node --test dist/tests/*.js",
     "install:local": "sh ./install.sh",
+    "uninstall:local": "sh ./uninstall.sh",
     "prepack": "npm run build",
     "clean": "rm -rf dist"
   },

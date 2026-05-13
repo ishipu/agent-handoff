@@ -32,6 +32,18 @@ export interface StatusReport {
   text: string;
 }
 
+export interface CreatedFileEntry {
+  path: string;
+  type: "file" | "directory" | "session";
+  exists: boolean;
+}
+
+export interface CreatedFilesReport {
+  projectPath: string;
+  entries: CreatedFileEntry[];
+  text: string;
+}
+
 export interface CloseSessionResult {
   sessionPath: string;
   handoffPath: string;

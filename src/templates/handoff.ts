@@ -16,7 +16,7 @@ export function initialHandoffTemplate(now = new Date()): string {
     "",
     "## Next Step",
     "",
-    'Run `agent-handoff pickup` before starting, and `agent-handoff close-session --agent claude|codex --summary "..."` before ending.',
+    'Run `agent-handoff pickup` before starting. Before ending, run `agent-handoff close-session --agent claude --summary "..."` or `agent-handoff close-session --agent codex --summary "..."`.',
     "",
     "## Notes For Next Agent",
     "",

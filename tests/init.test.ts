@@ -5,8 +5,9 @@ import path from "node:path";
 import { test } from "node:test";
 import { promisify } from "node:util";
 import assert from "node:assert/strict";
-import { closeSession, initProject, pickupPrompt, projectStatus, sessionFiles } from "../src/index.js";
+import { closeSession, createdFiles, initProject, pickupPrompt, projectStatus, sessionFiles } from "../src/index.js";
 import { exists } from "../src/fileOps.js";
+import { usage } from "../src/parseArgs.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -76,6 +77,26 @@ test("pickup includes handoff context and continuation guidance", async () => {
   assert.match(prompt, /Current handoff/);
 });
 
+test("files reports scaffolded files and session notes", async () => {
+  const project = await tempProject();
+  const before = await createdFiles({ projectPath: project });
+  assert.match(before.text, /missing\s+file\s+AGENTS\.md/);
+  assert.match(before.text, /missing\s+directory\s+\.agent\/sessions/);
+
+  await initProject({ projectPath: project });
+  await closeSession({
+    projectPath: project,
+    agent: "claude",
+    summary: "Prepared the next sprint.",
+    now: new Date("2026-05-13T13:00:00.000Z")
+  });
+
+  const after = await createdFiles({ projectPath: project });
+  assert.match(after.text, /present\s+file\s+AGENTS\.md/);
+  assert.match(after.text, /present\s+directory\s+\.agent\/sessions/);
+  assert.match(after.text, /present\s+session\s+\.agent\/sessions\/2026-05-13T13-00-00-000Z-claude\.md/);
+});
+
 test("close-session writes a session note and updates handoff", async () => {
   const project = await tempProject();
   await initProject({ projectPath: project });
@@ -91,6 +112,14 @@ test("close-session writes a session note and updates handoff", async () => {
   assert.equal(sessions.length, 1);
   assert.match(await readFile(sessions[0], "utf8"), /Implemented the first pass/);
   assert.match(await readFile(path.join(project, ".agent/HANDOFF.md"), "utf8"), /Last agent: codex/);
+});
+
+test("usage shows copy-paste safe close-session examples", () => {
+  const help = usage();
+  assert.match(help, /agent-handoff files \[projectPath\]/);
+  assert.match(help, /--agent claude --summary/);
+  assert.match(help, /--agent codex --summary/);
+  assert.doesNotMatch(help, /--agent claude\|codex/);
 });
 
 async function assertExists(filePath: string): Promise<void> {

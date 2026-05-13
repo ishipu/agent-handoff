@@ -8,7 +8,7 @@ import assert from "node:assert/strict";
 
 const execFileAsync = promisify(execFile);
 
-test("install.sh installs the CLI into a temp npm prefix", { timeout: 120_000 }, async () => {
+test("install.sh installs and uninstall.sh removes the CLI from a temp npm prefix", { timeout: 120_000 }, async () => {
   const repoRoot = process.cwd();
   const tempRoot = await mkdtemp(path.join(os.tmpdir(), "agent-handoff-install-"));
   const prefix = path.join(tempRoot, "prefix");
@@ -30,4 +30,12 @@ test("install.sh installs the CLI into a temp npm prefix", { timeout: 120_000 },
   const { stdout } = await execFileAsync(bin, ["--help"], { env });
   assert.match(stdout, /agent-handoff/);
   assert.match(stdout, /close-session/);
+
+  await execFileAsync("sh", ["uninstall.sh"], {
+    cwd: repoRoot,
+    env,
+    maxBuffer: 1024 * 1024 * 10
+  });
+
+  await assert.rejects(execFileAsync(bin, ["--help"], { env }), /ENOENT/);
 });

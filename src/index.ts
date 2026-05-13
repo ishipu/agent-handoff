@@ -1,8 +1,8 @@
-import { closeSession, initProject, pickupPrompt, projectStatus } from "./commands.js";
+import { closeSession, createdFiles, initProject, pickupPrompt, projectStatus } from "./commands.js";
 import { parseArgs, usage } from "./parseArgs.js";
 
-export { closeSession, initProject, pickupPrompt, projectStatus, sessionFiles } from "./commands.js";
-export type { CloseSessionOptions, InitOptions, StatusReport } from "./types.js";
+export { closeSession, createdFiles, initProject, pickupPrompt, projectStatus, sessionFiles } from "./commands.js";
+export type { CloseSessionOptions, CreatedFilesReport, InitOptions, StatusReport } from "./types.js";
 
 export async function runCli(argv: string[]): Promise<void> {
   const parsed = parseArgs(argv);
@@ -31,11 +31,16 @@ export async function runCli(argv: string[]): Promise<void> {
       console.log(prompt);
       return;
     }
+    case "files": {
+      const report = await createdFiles({ projectPath: parsed.projectPath });
+      console.log(report.text);
+      return;
+    }
     case "close-session": {
       const agent = parsed.flags.agent;
       const summary = parsed.flags.summary;
       if (agent !== "claude" && agent !== "codex") {
-        throw new Error("close-session requires --agent claude|codex");
+        throw new Error("close-session requires --agent claude or --agent codex");
       }
       if (typeof summary !== "string" || summary.trim().length === 0) {
         throw new Error('close-session requires --summary "..."');

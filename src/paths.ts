@@ -1,12 +1,17 @@
 import path from "node:path";
 
-export const expectedProjectFiles = [
-  "AGENTS.md",
-  "CLAUDE.md",
-  ".agent/HANDOFF.md",
-  ".claude/skills/agent-handoff/SKILL.md",
-  ".codex/skills/agent-handoff/SKILL.md"
+export const expectedProjectEntries = [
+  { path: "AGENTS.md", type: "file" },
+  { path: "CLAUDE.md", type: "file" },
+  { path: ".agent/HANDOFF.md", type: "file" },
+  { path: ".agent/sessions", type: "directory" },
+  { path: ".claude/skills/agent-handoff/SKILL.md", type: "file" },
+  { path: ".codex/skills/agent-handoff/SKILL.md", type: "file" }
 ] as const;
+
+export const expectedProjectFiles = expectedProjectEntries
+  .filter((entry) => entry.type === "file")
+  .map((entry) => entry.path);
 
 export function resolveProjectPath(projectPath = "."): string {
   return path.resolve(process.cwd(), projectPath);
