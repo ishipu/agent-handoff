@@ -1,0 +1,37 @@
+{
+  "name": "agent-handoff",
+  "version": "0.1.0",
+  "description": "Scaffold shared handoff files and skills for Claude and Codex.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "agent-handoff": "./dist/src/cli.js"
+  },
+  "files": [
+    "dist/src",
+    "install.sh",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --test dist/tests/*.js",
+    "install:local": "sh ./install.sh",
+    "prepack": "npm run build",
+    "clean": "rm -rf dist"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.18",
+    "typescript": "^5.8.3"
+  },
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ishipu/agent-handoff.git"
+  },
+  "homepage": "https://github.com/ishipu/agent-handoff#readme"
+}
